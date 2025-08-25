@@ -8,29 +8,28 @@ In this demo project - We create a VPC, with two public subnets in two different
 - Associate both public subnets with route table
 - Edit route: Destination -> 0.0.0/0 and target -> Internet Gateway
 
-- Create EC2 instances in each public subnet 
+- Create EC2 instances in each public subnet
 
-Select AMI
-Select Instance type
-Create keypair 
-Select VPC 
-Select subnet 
-Select firewall(Security Group-sg) or create a new one
-Enable Auto-assign pulbic IP *IMPORTANT*
+1. Select AMI
+2. Select Instance type
+3. Create keypair
+4. Select VPC
+5. Select subnet
+6. Select firewall(Security Group-sg) or create a new one
+7. Enable Auto-assign pulbic IP _IMPORTANT_
 
+## _IMPORTANT_ For EC2 instances security group inbound rules:
 
-## *IMPORTANT* For EC2 instances inbound rule:
-
-port - 80, HTTP, custom from security group of alb security group( to allow http traffic via application load balancer(alb) only)
+port - 80, HTTP, custom from security group of alb security group( to allow http traffic to ec2 instances via application load balancer(alb) only)
 port - 22, SSH from anywhere(not suggested, recommended your IP)
 
-## *IMPORTANT* For Application load balancer
+## _IMPORTANT_ For Application load balancer security group inbound rules:
 
 port - 80, HTTP from anywhere
 port - 443, HTTPS from anywhere
 
-Add User data - from advanced settings:
-User script for Nginx server Installation for Ubuntu 24.04
+8. Add User data - from advanced settings:
+   User script for Nginx server Installation for Ubuntu 24.04
 
 ```
 #!/bin/bash
@@ -43,69 +42,61 @@ echo "<h1>Hello from ASG behind ALB</h1>" > /var/www/html/index.nginx-debian.htm
 
 - Create Target group
 
-Choose a target type: Instances
-Target group name: Name
-VPC
-Select instances from available instances as target and include as pending below
-Ports for the selected instances : 80
-
+1. Choose a target type: Instances
+2. Target group name: Name
+3. VPC
+4. Select instances from available instances as target and include as pending below
+5. Ports for the selected instances : 80
 
 - Create Application Load balancer(ALB)
 
-Load balancer name
-Scheme - Internet-facing
-VPC
-Availability Zones and subnets
-Security groups
-Listeners and routing : select Target Group 
-Create load balancer
+1. Load balancer name
+2. Scheme - Internet-facing
+3. VPC
+4. Availability Zones and subnets
+5. Security groups
+6. Listeners and routing : select Target Group -> Create load balancer
 
 - Use launch template for Autoscaling group (Automatically scale your EC2 instance as per traffic)
 
-Launch template name - required
-Template version description
-Application and OS Images (Amazon Machine Image) 
-Instance type 
-Key pair (login) 
-Firewall (security groups)
-User data - optional 
-Create launch template
+1. Launch template name - required
+2. Template version description
+3. Application and OS Images (Amazon Machine Image)
+4. Instance type
+5. Key pair (login)
+6. Firewall (security groups)
+7. User data -> Create launch template
 
 - Create Autoscaling group
 
-Auto Scaling group name
-Launch template
-VPC
-Availability Zones and subnets
-Load balancing : Choose 'No load balancer' (create after it) or if you have already create one before then 'Attach to an existing load balancer'
-Existing load balancer target groups : if then select
-Choose Desired capacity 
-Min desired capacity
-Max desired capacity
-Create Autoscaling group
+1. Auto Scaling group name
+2. Launch template
+3. VPC
+4. Availability Zones and subnets
+5. Load balancing : Choose 'No load balancer' (create after it) or if you have already create one before then 'Attach to an existing load balancer'
+6. Existing load balancer target groups : if then select
+7. Choose Desired capacity -> Min desired capacity -> Max desired capacity -> Create Autoscaling group
 
-
-Copy the dns name and hit on browser: 
-Example dns name below: 
+8. Select -> Application load balancer, Copy the dns name and hit on browser
+   Example dns name below:
 
 ```
 http://alb-test-1415501060.us-east-2.elb.amazonaws.com/
 ```
+
 You will see this output on browser if everything went well
 
 ```
 Hello from ASG behind ALB
 ```
 
-- After use donot forget to cleanup resources 
+- After use donot forget to cleanup resources
 
 NOTE: Launch template and Target Groups doesnot incur charges. Only resources created by them does.
 
-
 Troubleshooting common error:
- 
-If DNS name doesnt show desired output, this means there is something wrong with security group setting 
-Autoassign Public IP is enabled (In launch template, finding this setting is tricky, its under Advanced network configuration -> Add Network Interface -> Auto-assign public IP )
-The user data script is correct 
-DNS name starts with http 
 
+- If DNS name doesnt show desired output, this means there is something wrong with security group setting
+- Autoassign Public IP is enabled (In launch template, finding this setting is tricky, its under Advanced network configuration -> Add Network Interface -> Auto-assign public IP )
+- The user data script is correct and installed properly
+- DNS name starts with http
